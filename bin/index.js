@@ -34,6 +34,8 @@ async function main() {
       .option("-e, --extract", "Extract pack")
       .option("-c, --compile", "Compile pack")
       .option("-p, --pack <name>", "Name of the pack")
+      .option("-i, --input <path>", "Input path")
+      .option("-o, --output <path>", "Output path")
       .option("-n, --nedb", "Is the pack in the NEDB format?")
       .option("-t, --type [type]", "Type of the NEDB pack collection");
 
@@ -47,27 +49,22 @@ async function main() {
       );
     }
 
-    if (!options.pack) {
-      throw new Error("No pack specified");
-    }
-
     if (options.nedb && !options.type) {
       throw new Error("NEDB requires a collection type specified");
     }
 
-    if (options.extract) {
-      const input = path.normalize(
-        `./${options.pack}${options.nedb ? ".db" : ""}`
-      );
-      const output = path.normalize(`./json/${options.pack}`);
-      await extract(input, output, options.nedb, options.type);
-    }
+    const input = path.normalize(
+      options.input +
+        "/" +
+        options.pack +
+        (options.extract && options.nedb ? ".db" : "")
+    );
 
-    if (options.compile) {
-      const input = path.normalize(`./json/${options.pack}`);
-      const output = path.normalize(
-        `./compiled/${options.pack}${options.nedb ? ".db" : ""}`
-      );
+    const output = path.normalize(options.output + "/" + options.pack);
+
+    if (options.extract) {
+      await extract(input, output, options.nedb, options.type);
+    } else if (options.compile) {
       await compile(input, output, options.nedb, options.type);
     }
 
@@ -77,8 +74,14 @@ async function main() {
   }
 
   async function launchWithoutArgs() {
+    let inputPathMessage;
+    let inputPathDefault;
+    let outputPathMessage;
+    let outputPathDefault;
+    let collection;
+
     console.log();
-    intro(`[ FoundryVTT Database Converter 1.0.2 ]`);
+    intro(`[ FoundryVTT Database Converter 1.1.0 ]`);
 
     const isExtract = await select({
       message: "Do you want to extract or compile a pack?",
@@ -95,12 +98,42 @@ async function main() {
     }
 
     const pack = await text({
-      message: "Enter the name of the pack",
-      placeholder:
-        "Can be a file name or a directory name, including subdirectories. Do not include the .db extension!",
+      message: "Name of the pack",
     });
 
     if (isCancel(pack)) {
+      cancel("Operation cancelled");
+      return process.exit(0);
+    }
+
+    if (isExtract) {
+      inputPathMessage = "Input path to the pack directory";
+      inputPathDefault = "./packs/";
+      outputPathMessage = "Output path to the directory with JSON data";
+      outputPathDefault = "./json/";
+    } else {
+      inputPathMessage = "Input path to the directory with JSON data";
+      inputPathDefault = "./json/";
+      outputPathMessage = "Output path to the compiled pack";
+      outputPathDefault = "./compiled/";
+    }
+
+    const input = await text({
+      message: inputPathMessage,
+      initialValue: inputPathDefault,
+    });
+
+    if (isCancel(input)) {
+      cancel("Operation cancelled");
+      return process.exit(0);
+    }
+
+    const output = await text({
+      message: outputPathMessage,
+      initialValue: outputPathDefault,
+    });
+
+    if (isCancel(output)) {
       cancel("Operation cancelled");
       return process.exit(0);
     }
@@ -118,8 +151,6 @@ async function main() {
       cancel("Operation cancelled");
       return process.exit(0);
     }
-
-    let collection;
 
     if (isNEDB) {
       collection = await select({
@@ -144,21 +175,21 @@ async function main() {
       }
     }
 
+    const inputPath = path.normalize(
+      input + "/" + pack + (isExtract && isNEDB ? ".db" : "")
+    );
+    const outputPath = path.normalize(output + "/" + pack);
+
     const s = spinner();
 
     if (isExtract) {
-      s.start(`Extracting the pack "${pack}"...`);
-      const input = path.normalize(`./${pack}${isNEDB ? ".db" : ""}`);
-      const output = path.normalize(`./json/${pack}`);
-      await extract(input, output, isNEDB, collection);
-      s.stop("Extracted!");
+      s.start(`Extracting the pack...`);
+      await extract(inputPath, outputPath, isNEDB, collection);
     } else {
-      s.start(`Compiling the pack "${pack}"...`);
-      const input = path.normalize(`./json/${pack}`);
-      const output = path.normalize(`./compiled/${pack}${isNEDB ? ".db" : ""}`);
-      await compile(input, output, isNEDB, collection);
-      s.stop("Compiled!");
+      s.start(`Compiling the pack...`);
+      await compile(inputPath, outputPath, isNEDB, collection);
     }
+    s.stop("Compiled!");
 
     intro(`[ Process completed ]`);
     process.exit(0);
