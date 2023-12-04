@@ -1,6 +1,6 @@
 {
   "name": "fvttdb",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "FVTTDB is a CLI helper for Foundry VTT CLI to extract and compile databases.",
   "author": "phenomen",
   "license": "MIT",

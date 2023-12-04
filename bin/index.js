@@ -13,7 +13,7 @@ import {
 } from "@clack/prompts";
 
 async function main() {
-  const version = "1.2.0";
+  const version = "1.3.0";
 
   if (process.argv.length > 2) {
     await launchWithArgs();
