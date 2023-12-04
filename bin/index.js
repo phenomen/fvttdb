@@ -2,7 +2,15 @@
 import path from "path";
 import { Command } from "commander";
 import { extractPack, compilePack } from "@foundryvtt/foundryvtt-cli";
-import { intro, isCancel, cancel, text, select, spinner } from "@clack/prompts";
+import {
+  cancel,
+  confirm,
+  intro,
+  isCancel,
+  select,
+  spinner,
+  text,
+} from "@clack/prompts";
 
 async function main() {
   if (process.argv.length > 2) {
@@ -81,7 +89,7 @@ async function main() {
     let collection;
 
     console.log();
-    intro(`[ FoundryVTT Database Converter 1.1.0 ]`);
+    intro(`[ FoundryVTT Database Converter 1.2.0 ]`);
 
     const isExtract = await select({
       message: "Do you want to extract or compile a pack?",
@@ -107,8 +115,8 @@ async function main() {
     }
 
     if (isExtract) {
-      inputPathMessage = "Input path to the pack directory";
-      inputPathDefault = "./packs/";
+      inputPathMessage = "Input path to the directory with the pack";
+      inputPathDefault = "./";
       outputPathMessage = "Output path to the directory with JSON data";
       outputPathDefault = "./json/";
     } else {
@@ -178,7 +186,20 @@ async function main() {
     const inputPath = path.normalize(
       input + "/" + pack + (isExtract && isNEDB ? ".db" : "")
     );
-    const outputPath = path.normalize(output + "/" + pack);
+    const outputPath = path.normalize(
+      output + "/" + pack + (!isExtract && isNEDB ? ".db" : "")
+    );
+
+    const shouldContinue = await confirm({
+      message: `FVTTDB will ${
+        isExtract ? "extract" : "compile"
+      } the pack '${pack}' from ${inputPath} to ${outputPath} Do you want to continue?`,
+    });
+
+    if (isCancel(shouldContinue)) {
+      cancel("Operation cancelled");
+      return process.exit(0);
+    }
 
     const s = spinner();
 
