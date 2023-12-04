@@ -13,6 +13,8 @@ import {
 } from "@clack/prompts";
 
 async function main() {
+  const version = "1.2.0";
+
   if (process.argv.length > 2) {
     await launchWithArgs();
   } else {
@@ -21,17 +23,17 @@ async function main() {
 
   /* FUNCTIONS */
 
-  async function extract(input, output, nedb, collection) {
+  async function extract(input, output, nedb, type) {
     await extractPack(input, output, {
       nedb: nedb,
-      collection: collection,
+      collection: type,
     });
   }
 
-  async function compile(input, output, nedb, collection) {
+  async function compile(input, output, nedb, type) {
     await compilePack(input, output, {
       nedb: nedb,
-      collection: collection,
+      collection: type,
     });
   }
 
@@ -53,7 +55,7 @@ async function main() {
 
     if (!options.extract && !options.compile) {
       throw new Error(
-        "You need to specify either extract or compile operation"
+        "You need to specify either --extract (-e) or --compile (-c) operation"
       );
     }
 
@@ -61,19 +63,20 @@ async function main() {
       throw new Error("NEDB requires a collection type specified");
     }
 
-    const input = path.normalize(
-      options.input +
-        "/" +
-        options.pack +
-        (options.extract && options.nedb ? ".db" : "")
+    const inputPath = path.join(
+      options.input,
+      options.pack + (options.extract && options.nedb ? ".db" : "")
     );
 
-    const output = path.normalize(options.output + "/" + options.pack);
+    const outputPath = path.join(
+      options.output,
+      options.pack + (!options.extract && options.nedb ? ".db" : "")
+    );
 
     if (options.extract) {
-      await extract(input, output, options.nedb, options.type);
+      await extract(inputPath, outputPath, options.nedb, options.type);
     } else if (options.compile) {
-      await compile(input, output, options.nedb, options.type);
+      await compile(inputPath, outputPath, options.nedb, options.type);
     }
 
     console.log("Done!");
@@ -89,7 +92,7 @@ async function main() {
     let collection;
 
     console.log();
-    intro(`[ FoundryVTT Database Converter 1.2.0 ]`);
+    intro(`[ FoundryVTT Database Converter ${version} ]`);
 
     const isExtract = await select({
       message: "Do you want to extract or compile a pack?",
@@ -183,11 +186,13 @@ async function main() {
       }
     }
 
-    const inputPath = path.normalize(
-      input + "/" + pack + (isExtract && isNEDB ? ".db" : "")
+    const inputPath = path.join(
+      input,
+      pack + (isExtract && isNEDB ? ".db" : "")
     );
-    const outputPath = path.normalize(
-      output + "/" + pack + (!isExtract && isNEDB ? ".db" : "")
+    const outputPath = path.join(
+      output,
+      pack + (!isExtract && isNEDB ? ".db" : "")
     );
 
     const shouldContinue = await confirm({
