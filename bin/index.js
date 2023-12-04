@@ -13,7 +13,7 @@ import {
 } from "@clack/prompts";
 
 async function main() {
-  const version = "1.3.0";
+  const version = "1.3.1";
 
   if (process.argv.length > 2) {
     await launchWithArgs();
@@ -119,7 +119,7 @@ async function main() {
 
     if (isExtract) {
       inputPathMessage = "Input path to the directory with the pack";
-      inputPathDefault = "./";
+      inputPathDefault = "./packs/";
       outputPathMessage = "Output path to the directory with JSON data";
       outputPathDefault = "./json/";
     } else {
