@@ -15,7 +15,7 @@ import {
 } from "@clack/prompts";
 
 async function main() {
-	const version = "1.6.0";
+	const version = "1.6.1";
 
 	let inputPathMessage;
 	let inputPathDefault;
@@ -29,7 +29,7 @@ async function main() {
 
 	/* PROMPT: OPERATION */
 	const isExtract = await select({
-		message: "Do you want to extract or compile a pack?",
+		message: "Do you want to extract or compile packs?",
 		options: [
 			{ value: true, label: "Extract" },
 			{ value: false, label: "Compile" }
@@ -98,14 +98,14 @@ async function main() {
 
 	/* PROMPT: INPUT DIRECTORY */
 	if (isExtract) {
-		inputPathMessage = "Path to the Input directory with the pack";
+		inputPathMessage = "Path to the Input directory with packs";
 		inputPathDefault = "./";
 		outputPathMessage = `Path to the Output directory with ${isYAML ? "YAML" : "JSON"} data`;
 		outputPathDefault = "./src/";
 	} else {
 		inputPathMessage = `Path to the Input directory with ${isYAML ? "YAML" : "JSON"} data`;
 		inputPathDefault = "./src/";
-		outputPathMessage = "Path to the Output compiled pack";
+		outputPathMessage = "Path to the Output directory with compiled packs";
 		outputPathDefault = "./compiled/";
 	}
 
@@ -123,7 +123,9 @@ async function main() {
 	files = await readdir(input, { withFileTypes: true });
 
 	const packs = await multiselect({
-		message: `Select packs to ${isExtract ? "extract" : "compile"} (Space: Select; Enter: Confirm)`,
+		message: `Select packs to ${
+			isExtract ? "extract" : "compile"
+		} (Space: select; A: select all; Enter: confirm)`,
 		options: files.map((file) => {
 			return { value: file.name, label: file.name };
 		}),
