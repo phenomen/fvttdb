@@ -5,7 +5,7 @@ import { extractPack, compilePack } from "@foundryvtt/foundryvtt-cli";
 import { cancel, confirm, intro, isCancel, select, spinner, text } from "@clack/prompts";
 
 async function main() {
-	const version = "1.5.0";
+	const version = "1.5.1";
 
 	let inputPathMessage;
 	let inputPathDefault;
@@ -47,7 +47,7 @@ async function main() {
 
 	if (isNEDB) {
 		collection = await select({
-			message: "Select a collection type for NeDB pack.",
+			message: "Select a collection type for NeDB pack",
 			options: [
 				{ value: "actors", label: "Actors" },
 				{ value: "adventures", label: "Adventures" },
@@ -81,17 +81,6 @@ async function main() {
 		cancel("Operation cancelled");
 		return process.exit(0);
 	}
-
-	/*
-  const pack = await text({
-    message: "Name of the pack",
-  });
-
-  if (isCancel(pack)) {
-    cancel("Operation cancelled");
-    return process.exit(0);
-  }
-  */
 
 	if (isExtract) {
 		inputPathMessage = "Path to the Input directory with the pack";
