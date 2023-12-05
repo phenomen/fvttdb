@@ -2,10 +2,20 @@
 import path from "path";
 import { readdir } from "fs/promises";
 import { extractPack, compilePack } from "@foundryvtt/foundryvtt-cli";
-import { cancel, confirm, intro, isCancel, select, spinner, text } from "@clack/prompts";
+import {
+	cancel,
+	confirm,
+	intro,
+	outro,
+	isCancel,
+	select,
+	spinner,
+	text,
+	multiselect
+} from "@clack/prompts";
 
 async function main() {
-	const version = "1.5.1";
+	const version = "1.6.0";
 
 	let inputPathMessage;
 	let inputPathDefault;
@@ -17,6 +27,7 @@ async function main() {
 	console.log();
 	intro(`[ FoundryVTT Database Converter ${version} ]`);
 
+	/* PROMPT: OPERATION */
 	const isExtract = await select({
 		message: "Do you want to extract or compile a pack?",
 		options: [
@@ -31,6 +42,7 @@ async function main() {
 		return process.exit(0);
 	}
 
+	/* PROMPT: DATABASE TYPE */
 	const isNEDB = await select({
 		message: "Select a database format",
 		options: [
@@ -47,7 +59,8 @@ async function main() {
 
 	if (isNEDB) {
 		collection = await select({
-			message: "Select a collection type for NeDB pack",
+			message:
+				"Select a collection type for NeDB pack (all selected packs should have the same type)",
 			options: [
 				{ value: "actors", label: "Actors" },
 				{ value: "adventures", label: "Adventures" },
@@ -68,6 +81,7 @@ async function main() {
 		}
 	}
 
+	/* PROMPT: SOURCE FORMAT */
 	const isYAML = await select({
 		message: "Select a data source format",
 		options: [
@@ -82,6 +96,7 @@ async function main() {
 		return process.exit(0);
 	}
 
+	/* PROMPT: INPUT DIRECTORY */
 	if (isExtract) {
 		inputPathMessage = "Path to the Input directory with the pack";
 		inputPathDefault = "./";
@@ -104,25 +119,23 @@ async function main() {
 		return process.exit(0);
 	}
 
-	files = await readdir(input, { withFileTypes: false });
+	/* PROMPT: PACK */
+	files = await readdir(input, { withFileTypes: true });
 
-	/* remove extension */
-	files = files.map((file) => {
-		return file.replace(/\.[^/.]+$/, "");
-	});
-
-	const pack = await select({
-		message: `Select a pack to ${isExtract ? "extract" : "compile"}`,
+	const packs = await multiselect({
+		message: `Select packs to ${isExtract ? "extract" : "compile"} (Space: Select; Enter: Confirm)`,
 		options: files.map((file) => {
-			return { value: file, label: file };
-		})
+			return { value: file.name, label: file.name };
+		}),
+		required: true
 	});
 
-	if (isCancel(pack)) {
+	if (isCancel(packs)) {
 		cancel("Operation cancelled");
 		return process.exit(0);
 	}
 
+	/* PROMPT: OUTPUT DIRECTORY */
 	const output = await text({
 		message: outputPathMessage,
 		initialValue: outputPathDefault
@@ -133,13 +146,11 @@ async function main() {
 		return process.exit(0);
 	}
 
-	const inputPath = path.join(input, pack + (isExtract && isNEDB ? ".db" : ""));
-	const outputPath = path.join(output, pack + (!isExtract && isNEDB ? ".db" : ""));
-
+	/* PROMPT: CONFIRMATION */
 	const shouldContinue = await confirm({
-		message: `FVTTDB will ${
-			isExtract ? "extract" : "compile"
-		} the pack '${pack}' from ${inputPath} to ${outputPath} Do you want to continue?`
+		message: `FVTTDB will ${isExtract ? "extract" : "compile"} the pack${
+			packs.length > 1 ? "s" : ""
+		} '${packs}' from ${input} to ${output} Do you want to continue?`
 	});
 
 	if (isCancel(shouldContinue)) {
@@ -147,26 +158,34 @@ async function main() {
 		return process.exit(0);
 	}
 
+	/* OPERATION */
 	const s = spinner();
 
-	if (isExtract) {
-		s.start(`Extracting the pack...`);
-		await extractPack(inputPath, outputPath, {
-			nedb: isNEDB,
-			yaml: isYAML,
-			collection: collection
-		});
-	} else {
-		s.start(`Compiling the pack...`);
-		await compilePack(inputPath, outputPath, {
-			nedb: isNEDB,
-			yaml: isYAML,
-			collection: collection
-		});
+	s.start(`Processing...`);
+
+	for (let pack of packs) {
+		const inputPath = path.join(input, pack);
+		const outputPath = path.join(output, pack);
+
+		if (isExtract) {
+			await extractPack(inputPath, outputPath, {
+				nedb: isNEDB,
+				yaml: isYAML,
+				collection: collection
+			});
+		} else {
+			await compilePack(inputPath, outputPath, {
+				nedb: isNEDB,
+				yaml: isYAML,
+				collection: collection
+			});
+		}
 	}
 
-	s.stop("Done!");
-	intro(`[ Process completed ]`);
+	s.stop();
+
+	outro("[ Process completed ]");
+
 	process.exit(0);
 }
 
