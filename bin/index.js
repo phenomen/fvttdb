@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { extractPack, compilePack } from "@foundryvtt/foundryvtt-cli";
