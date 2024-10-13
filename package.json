@@ -1,15 +1,17 @@
 {
 	"name": "fvttdb",
-	"version": "1.7.0",
+	"version": "1.7.2",
 	"description": "FVTTDB is a CLI helper for Foundry VTT CLI to extract and compile databases.",
 	"author": "phenomen",
-	"main": "index.js",
 	"type": "module",
-	"scripts": {
-		"test": "node bin/index.js"
-	},
 	"bin": {
-		"fvttdb": "bin/index.js"
+		"fvttdb": "./bin/index.js"
+	},
+	"main": "./bin/index.js",
+	"exports": "./bin/index.js",
+	"files": ["bin"],
+	"scripts": {
+		"start": "node ./bin/index.js"
 	},
 	"keywords": ["foundryvtt", "nedb", "leveldb", "json"],
 	"dependencies": {
