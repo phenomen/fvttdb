@@ -1,6 +1,6 @@
 #! /usr/bin/env node
-import path from "path";
-import { readdir } from "fs/promises";
+import path from "node:path";
+import { readdir } from "node:fs/promises";
 import { extractPack, compilePack } from "@foundryvtt/foundryvtt-cli";
 import {
 	cancel,
@@ -11,11 +11,11 @@ import {
 	select,
 	spinner,
 	text,
-	multiselect
+	multiselect,
 } from "@clack/prompts";
 
 async function main() {
-	const version = "1.6.1";
+	const version = "1.7.0";
 
 	let inputPathMessage;
 	let inputPathDefault;
@@ -32,9 +32,9 @@ async function main() {
 		message: "Do you want to extract or compile packs?",
 		options: [
 			{ value: true, label: "Extract" },
-			{ value: false, label: "Compile" }
+			{ value: false, label: "Compile" },
 		],
-		initialValue: true
+		initialValue: true,
 	});
 
 	if (isCancel(isExtract)) {
@@ -47,9 +47,9 @@ async function main() {
 		message: "Select a database format",
 		options: [
 			{ value: false, label: "LevelDB" },
-			{ value: true, label: "NeDB" }
+			{ value: true, label: "NeDB" },
 		],
-		initialValue: false
+		initialValue: false,
 	});
 
 	if (isCancel(isNEDB)) {
@@ -70,9 +70,9 @@ async function main() {
 				{ value: "macros", label: "Macros" },
 				{ value: "playlists", label: "Playlists" },
 				{ value: "tables", label: "Roll Tables" },
-				{ value: "scenes", label: "Scenes" }
+				{ value: "scenes", label: "Scenes" },
 			],
-			initialValue: "actors"
+			initialValue: "actors",
 		});
 
 		if (isCancel(collection)) {
@@ -86,9 +86,9 @@ async function main() {
 		message: "Select a data source format",
 		options: [
 			{ value: false, label: "JSON" },
-			{ value: true, label: "YAML" }
+			{ value: true, label: "YAML" },
 		],
-		initialValue: false
+		initialValue: false,
 	});
 
 	if (isCancel(isYAML)) {
@@ -111,7 +111,7 @@ async function main() {
 
 	const input = await text({
 		message: inputPathMessage,
-		initialValue: inputPathDefault
+		initialValue: inputPathDefault,
 	});
 
 	if (isCancel(input)) {
@@ -129,7 +129,7 @@ async function main() {
 		options: files.map((file) => {
 			return { value: file.name, label: file.name };
 		}),
-		required: true
+		required: true,
 	});
 
 	if (isCancel(packs)) {
@@ -140,7 +140,7 @@ async function main() {
 	/* PROMPT: OUTPUT DIRECTORY */
 	const output = await text({
 		message: outputPathMessage,
-		initialValue: outputPathDefault
+		initialValue: outputPathDefault,
 	});
 
 	if (isCancel(output)) {
@@ -152,7 +152,7 @@ async function main() {
 	const shouldContinue = await confirm({
 		message: `FVTTDB will ${isExtract ? "extract" : "compile"} the pack${
 			packs.length > 1 ? "s" : ""
-		} '${packs}' from ${input} to ${output} Do you want to continue?`
+		} '${packs}' from ${input} to ${output} Do you want to continue?`,
 	});
 
 	if (isCancel(shouldContinue)) {
@@ -163,9 +163,9 @@ async function main() {
 	/* OPERATION */
 	const s = spinner();
 
-	s.start(`Processing...`);
+	s.start("Processing...");
 
-	for (let pack of packs) {
+	for (const pack of packs) {
 		const inputPath = path.join(input, pack);
 		const outputPath = path.join(output, pack);
 
@@ -173,13 +173,13 @@ async function main() {
 			await extractPack(inputPath, outputPath, {
 				nedb: isNEDB,
 				yaml: isYAML,
-				collection: collection
+				collection: collection,
 			});
 		} else {
 			await compilePack(inputPath, outputPath, {
 				nedb: isNEDB,
 				yaml: isYAML,
-				collection: collection
+				collection: collection,
 			});
 		}
 	}
