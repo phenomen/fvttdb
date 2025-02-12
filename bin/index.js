@@ -15,7 +15,7 @@ import {
 } from "@clack/prompts";
 
 async function main() {
-	const version = "1.7.2";
+	const version = "1.8.0";
 
 	let inputPathMessage;
 	let inputPathDefault;

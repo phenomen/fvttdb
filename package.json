@@ -1,6 +1,6 @@
 {
 	"name": "fvttdb",
-	"version": "1.7.5",
+	"version": "1.8.0",
 	"description": "FVTTDB is a CLI helper for Foundry VTT CLI to extract and compile databases.",
 	"author": "phenomen",
 	"type": "module",
@@ -15,7 +15,7 @@
 	},
 	"keywords": ["foundryvtt", "nedb", "leveldb", "json"],
 	"dependencies": {
-		"@clack/prompts": "^0.7.0",
-		"@foundryvtt/foundryvtt-cli": "^1.0.3"
+		"@clack/prompts": "^0.10.0",
+		"@foundryvtt/foundryvtt-cli": "^1.0.4"
 	}
 }
