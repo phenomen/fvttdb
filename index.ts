@@ -1,11 +1,13 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
+
 import path from "node:path";
 import { readdir } from "node:fs/promises";
 import { extractPack, compilePack } from "@foundryvtt/foundryvtt-cli";
 import * as p from "@clack/prompts";
+import pkg from "./package.json";
 
 async function main() {
-  const version = "2.0.0";
+  const version = pkg.version;
 
   let inputPathMessage;
   let inputPathDefault;
@@ -15,7 +17,7 @@ async function main() {
   let files;
 
   console.log();
-  p.intro(`[ FoundryVTT Database Converter ${version} ]`);
+  p.intro(`[ FoundryVTT Database Tools ${version} ]`);
 
   /* PROMPT: OPERATION */
   const isExtract = await p.select({
